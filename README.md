@@ -18,7 +18,7 @@ Available at: https://morphic-genelist-app.shinyapps.io/shiny_genesetexplore/
   - [Selection against heterozygous Loss of Function (posterior)](https://www.biorxiv.org/content/10.1101/2023.05.19.541520v1)
 - Disease data:
   - [Online Mendelian Inheritance in Man (OMIM)](https://www.omim.org/)
-  - [Development disorder gene2phenotpye (DDG2P)](https://www.ebi.ac.uk/gene2phenotype)
+  - [Developmental disorder gene2phenotpye (DDG2P)](https://www.ebi.ac.uk/gene2phenotype)
 
 ### To run the app locally...
 Set your working directroy to the folder containing **app.R** and **rda_data**
