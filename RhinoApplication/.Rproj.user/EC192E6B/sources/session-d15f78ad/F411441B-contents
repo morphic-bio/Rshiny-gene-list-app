@@ -1,0 +1,33 @@
+# Assuming 'main.annotated.data.frame' is your data frame
+original_gene_list <- main.annotated.data.frame$gene_symbol
+
+# Set a seed for reproducibility
+set.seed(123)
+
+# Number of samples to generate
+num_samples <- 5
+
+# Directory to save the files
+output_directory <- "/Users/gabrielm/Desktop/gene_lists_for_app_demo"
+
+# Create the output directory if it doesn't exist
+if (!file.exists(output_directory)) {
+  dir.create(output_directory)
+}
+
+# Generate and write random samples to TSV files
+for (i in 1:num_samples) {
+  # Randomly sample the gene list
+  sampled_genes <- sample(original_gene_list, size = 250, replace = TRUE)
+  
+  # Create a data frame
+  sample_df <- data.frame(Gene_Symbol = sampled_genes)
+  
+  # Construct the file name
+  file_name <- paste0(output_directory, "/gene_list_sample_", i, ".tsv")
+  
+  # Write the data frame to a TSV file
+  write.table(sample_df, file = file_name, sep = "\t", row.names = FALSE)
+  
+  cat("Sample", i, "written to", file_name, "\n")
+}

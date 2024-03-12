@@ -1,0 +1,8 @@
+build-last-errors="[]"
+build-last-errors-base-dir=""
+build-last-outputs="[]"
+compile_pdf_state="{\"tab_visible\":false,\"running\":false,\"target_file\":\"\",\"output\":\"\",\"errors\":[]}"
+files.monitored-path="~/Desktop/Rstuff/essentialgenes_rshiny_rhino_test"
+find-in-files-state="{\"handle\":\"766e16bc87914a8782c8333e6622b8a9\",\"input\":\"dpc_gene_list_data\",\"path\":\"~/Desktop/Rstuff/essentialgenes_rshiny_rhino_test/RhinoApplication\",\"regex\":false,\"ignoreCase\":true,\"results\":{\"file\":[\"~/Desktop/Rstuff/essentialgenes_rshiny_rhino_test/RhinoApplication/app/logic/import_rda_data.R\",\"~/Desktop/Rstuff/essentialgenes_rshiny_rhino_test/RhinoApplication/app/logic/table_manage.R\"],\"line\":[6,9],\"lineValue\":[\"dpc_gene_list_data <- function() {\",\"list_of_dpcs <- dpc_gene_list_data()\"],\"matchOn\":[[0],[16]],\"matchOff\":[[18],[34]],\"replaceMatchOn\":[[],[]],\"replaceMatchOff\":[[],[]]},\"running\":false,\"replace\":false,\"preview\":false,\"gitFlag\":true,\"replacePattern\":\"\"}"
+imageDirtyState="1"
+saveActionState="0"

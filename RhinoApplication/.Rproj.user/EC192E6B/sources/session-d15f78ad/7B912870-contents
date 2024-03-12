@@ -1,0 +1,180 @@
+# 1. BP
+# Compute enriched terms for dpc gene lists
+library(clusterProfiler)
+getEnrichedGoTermsMultipleInput <- function(gene_lists, background) {
+  
+  list_of_enrichGO_objs <- list()
+  for (i in gene_lists) {
+    go_analysis <- enrichGO(gene          = i[[1]],
+                            universe      = background,
+                            keyType = "SYMBOL",
+                            OrgDb         = "org.Hs.eg.db",
+                            ont           = "BP",
+                            pAdjustMethod = "BH",
+                            pvalueCutoff  = 0.01,
+                            qvalueCutoff  = 0.05,
+                            readable      = TRUE)
+    
+    #list_of_enrichGO_objs[[i[[2]]]] <- go_analysis
+    list_of_enrichGO_objs <- append(list_of_enrichGO_objs, list(
+      list(go_analysis, i[[2]])
+    ))
+  }
+  
+  list_of_enrichGO_objs
+}
+
+list_of_enrichGO_objs_bp <- getEnrichedGoTermsMultipleInput(list_of_dpcs, genesMetaDataDf_data$gene_symbol)
+
+# Reduce and visualise
+library(rrvgo)
+generateGoSemanticSimilarityPlot <- function(go_analysis) {
+  # go analysis = enriched terms
+  simMatrix <- calculateSimMatrix(go_analysis$ID,
+                                  orgdb="org.Hs.eg.db",
+                                  ont="BP",
+                                  method="Rel")
+  
+  scores <- setNames(-log10(go_analysis$qvalue), go_analysis$ID)
+  reducedTerms <- reduceSimMatrix(simMatrix,
+                                  scores,
+                                  threshold=0.7,
+                                  orgdb="org.Hs.eg.db")
+  
+  scat_p <- scatterPlot(simMatrix, reducedTerms)
+}
+
+plots_bp <- list()
+for (i in list_of_enrichGO_objs_bp) {
+  plots[[i[[2]]]] <- generateGoSemanticSimilarityPlot(i[[1]])
+}
+
+# 2. MF
+# Compute enriched terms for dpc gene lists
+getEnrichedGoTermsMultipleInput <- function(gene_lists, background) {
+  
+  list_of_enrichGO_objs <- list()
+  for (i in gene_lists) {
+    go_analysis <- enrichGO(gene          = i[[1]],
+                            universe      = background,
+                            keyType = "SYMBOL",
+                            OrgDb         = "org.Hs.eg.db",
+                            ont           = "MF",
+                            pAdjustMethod = "BH",
+                            pvalueCutoff  = 0.01,
+                            qvalueCutoff  = 0.05,
+                            readable      = TRUE)
+    
+    #list_of_enrichGO_objs[[i[[2]]]] <- go_analysis
+    list_of_enrichGO_objs <- append(list_of_enrichGO_objs, list(
+      list(go_analysis, i[[2]])
+    ))
+  }
+  
+  list_of_enrichGO_objs
+}
+
+list_of_enrichGO_objs_mf <- getEnrichedGoTermsMultipleInput(list_of_dpcs, genesMetaDataDf_data$gene_symbol)
+
+# Reduce and visualise
+generateGoSemanticSimilarityPlot <- function(go_analysis) {
+  # go analysis = enriched terms
+  simMatrix <- calculateSimMatrix(go_analysis$ID,
+                                  orgdb="org.Hs.eg.db",
+                                  ont="MF",
+                                  method="Rel")
+  
+  scores <- setNames(-log10(go_analysis$qvalue), go_analysis$ID)
+  reducedTerms <- reduceSimMatrix(simMatrix,
+                                  scores,
+                                  threshold=0.7,
+                                  orgdb="org.Hs.eg.db")
+  
+  scat_p <- scatterPlot(simMatrix, reducedTerms)
+}
+
+plots_mf <- list()
+for (i in list_of_enrichGO_objs_mf) {
+  plots_mf[[i[[2]]]] <- generateGoSemanticSimilarityPlot(i[[1]])
+}
+
+# 3. CC
+# Compute enriched terms for dpc gene lists
+getEnrichedGoTermsMultipleInput <- function(gene_lists, background) {
+  
+  list_of_enrichGO_objs <- list()
+  for (i in gene_lists) {
+    go_analysis <- enrichGO(gene          = i[[1]],
+                            universe      = background,
+                            keyType = "SYMBOL",
+                            OrgDb         = "org.Hs.eg.db",
+                            ont           = "CC",
+                            pAdjustMethod = "BH",
+                            pvalueCutoff  = 0.01,
+                            qvalueCutoff  = 0.05,
+                            readable      = TRUE)
+    
+    #list_of_enrichGO_objs[[i[[2]]]] <- go_analysis
+    list_of_enrichGO_objs <- append(list_of_enrichGO_objs, list(
+      list(go_analysis, i[[2]])
+    ))
+  }
+  
+  list_of_enrichGO_objs
+}
+
+list_of_enrichGO_objs_cc <- getEnrichedGoTermsMultipleInput(list_of_dpcs, genesMetaDataDf_data$gene_symbol)
+
+# Reduce and visualise
+generateGoSemanticSimilarityPlot <- function(go_analysis) {
+  # go analysis = enriched terms
+  simMatrix <- calculateSimMatrix(go_analysis$ID,
+                                  orgdb="org.Hs.eg.db",
+                                  ont="CC",
+                                  method="Rel")
+  
+  scores <- setNames(-log10(go_analysis$qvalue), go_analysis$ID)
+  reducedTerms <- reduceSimMatrix(simMatrix,
+                                  scores,
+                                  threshold=0.7,
+                                  orgdb="org.Hs.eg.db")
+  
+  scat_p <- scatterPlot(simMatrix, reducedTerms)
+}
+
+plots_cc <- list()
+for (i in list_of_enrichGO_objs_cc) {
+  # Only run analysis if there are enriched terms
+  if (length(i[[1]]$ID) > 0) {
+    plots_cc[[i[[2]]]] <- generateGoSemanticSimilarityPlot(i[[1]])
+  }
+}
+
+# Save dfs/tables
+getTopEnrichedTerms <- function(list_of_enrichGO_objs) {
+  top_enriched_terms_df <- list()
+  for (i in list_of_enrichGO_objs) {
+    df <- data.frame(i[[1]], row.names = NULL) %>%
+      select(ID, Description) %>%
+      rename(GO_ID = ID)
+    top_enriched_terms_df[[i[[2]]]] <- df
+  }
+  top_enriched_terms_df
+}
+
+top_enriched_terms_df_bp <- getTopEnrichedTerms(list_of_enrichGO_objs_bp)
+top_enriched_terms_df_mf <- getTopEnrichedTerms(list_of_enrichGO_objs_mf)
+top_enriched_terms_df_cc <- getTopEnrichedTerms(list_of_enrichGO_objs_cc)
+
+saveRDS(top_enriched_terms_df_bp, "./rda/semantic_analysis_tables_bp.rda", compress = TRUE)
+saveRDS(top_enriched_terms_df_mf, "./rda/semantic_analysis_tables_mf.rda", compress = TRUE)
+saveRDS(top_enriched_terms_df_cc, "./rda/semantic_analysis_tables_cc.rda", compress = TRUE)
+
+
+# Save plots
+saveRDS(plots_bp, "./rda/semantic_analysis_plots_bp.rda", compress = TRUE)
+saveRDS(plots_mf, "./rda/semantic_analysis_plots_mf.rda", compress = TRUE)
+saveRDS(plots_cc, "./rda/semantic_analysis_plots_cc.rda", compress = TRUE)
+
+
+x <- readRDS("./rda/semantic_analysis_tables_bp.rda")

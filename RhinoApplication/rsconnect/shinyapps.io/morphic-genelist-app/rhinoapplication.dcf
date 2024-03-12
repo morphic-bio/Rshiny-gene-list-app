@@ -1,0 +1,10 @@
+name: rhinoapplication
+title:
+username: morphic-genelist-app
+account: morphic-genelist-app
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 10960447
+bundleId: 8170764
+url: https://morphic-genelist-app.shinyapps.io/rhinoapplication/
+version: 1

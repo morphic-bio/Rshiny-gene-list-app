@@ -1,0 +1,28 @@
+{
+    "id": "E3151731",
+    "path": null,
+    "project_path": null,
+    "type": "object_explorer",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1710159829698.0,
+    "source_on_save": false,
+    "relative_order": 7,
+    "properties": {
+        "id": "f70a147974ca49e192ec0efcbe7b636b",
+        "name": "semantic_analysis_plots_bp",
+        "title": "semantic_analysis_plots_bp",
+        "language": "R",
+        "source_window_id": "",
+        "Source": "Source"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 0,
+    "encoding": "",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1710159829698,
+    "read_only": false,
+    "read_only_alternatives": []
+}

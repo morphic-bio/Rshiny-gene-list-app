@@ -1,0 +1,69 @@
+box::use(
+  fst[read.fst]
+)
+
+box::use(
+  app/logic/import_rda_data[...]
+)
+
+list_of_dpcs <- dpc_gene_list_data()
+genesMetaDataDf_data <- meta_data_table_data()
+
+#' @export
+getHiddenColumns <- function(selected_sources) {
+  source_to_columns <- list(
+
+    'DPCs studying Gene' = 0,
+    'Gene IDs' = 1:9,
+    'Mouse data' = 10:16,
+    'Disease data' = 17:28,
+    'Cell line data' = 29:35,
+    'Sequencing data' = 36:53,
+    'Pantherdb protein data' = 54:58,
+    'Gene Ontology data' = 59:64,
+    'Pathway data' = 63:66
+
+  )
+
+  hidden_columns <- unlist(lapply(selected_sources, function(source) {
+    source_to_columns[[source]]
+  }))
+
+  all_columns <- 0:66
+  visible_columns <- setdiff(all_columns, hidden_columns)
+  return(visible_columns)
+}
+
+#' @export
+getGeneListsFromSelect <- function(selected_dpcs) {
+gene_lists <- c()
+for (i in list_of_dpcs) {
+  if (i[[2]] %in% selected_dpcs) {
+    gene_lists <- c(gene_lists, i[[1]])
+  }
+}
+return(gene_lists)
+}
+
+#' @export
+subsetGenesMetaDataDf_rowsOnly <- function(genes_list) {
+  gene <- genes_list[1]
+  if (grepl("^HGNC:\\d+$", gene)) {
+    data_subset <- genesMetaDataDf_data[genesMetaDataDf_data$hgnc_id %in% genes_list, ]
+  } else {
+    # Check if the search term is an Entrez ID (e.g., ENSG12345)
+    if (grepl("^\\d+$", gene)) {
+      data_subset <- genesMetaDataDf_data[genesMetaDataDf_data$entrez_id %in% genes_list, ]
+    } else {
+      # Check if the search term is an MGI ID (e.g., MGI:12345)
+      if (grepl("^MGI:\\d+$", gene)) {
+        data_subset <- genesMetaDataDf_data[genesMetaDataDf_data$mgi_id %in% genes_list, ]
+      } else {
+        # Check if the search term is a gene symbol (e.g., Symbol_ABC)
+        data_subset <- genesMetaDataDf_data[genesMetaDataDf_data$gene_symbol %in% genes_list, ]
+      }
+    }
+  }
+  return(data_subset)
+}
+

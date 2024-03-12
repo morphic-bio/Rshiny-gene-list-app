@@ -1,0 +1,26 @@
+{
+    "id": "F678566C",
+    "path": "~/Desktop/Rstuff/essentialgenes_rshiny_rhino_test/RhinoApplication/app/view/visuals_layout.R",
+    "project_path": "app/view/visuals_layout.R",
+    "type": "r_source",
+    "hash": "668779093",
+    "contents": "",
+    "dirty": false,
+    "created": 1710106257468.0,
+    "source_on_save": false,
+    "relative_order": 3,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "265,20",
+        "scrollLine": "255"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1710160245,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1710160245897,
+    "read_only": false,
+    "read_only_alternatives": []
+}

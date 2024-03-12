@@ -1,0 +1,93 @@
+/* styles.css */
+@mixin shadow {
+  box-shadow:
+  0 4px 8px 0 rgba(0, 0, 0, 0.2),
+  0 6px 20px 0 rgba(0, 0, 0, 0.2);
+}
+
+@mixin shadow-sidebar {
+  box-shadow: 4px 0 8px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* Table border */
+.dataTables_scroll {
+  @include shadow;
+}
+
+/* Enable fixed header */
+.dataTables_scrollBody {
+  overflow: auto !important; 
+}
+
+/* Position download, filter, page info and number divs */
+.dataTables_wrapper.dt-bootstrap5.no-footer {
+  position: relative;
+  padding-top: 50px; 
+  padding-bottom: 50px; 
+}
+
+.dt-buttons.btn-group.flex-wrap {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.dataTables_filter {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.dataTables_info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+
+.dataTables_paginate.paging_simple_numbers {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}
+
+/* Give sidebar shadow */
+.sidebar {
+  @include shadow-sidebar;
+}
+
+/* For non-fill elements */
+@mixin fill-container {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.shiny-html-output.shiny-bound-output {
+  @include fill-container;
+}
+  
+.upsetjs.html-widget.html-widget-static-bound {
+  @include fill-container;
+}
+
+.root-upset-owbx37vh6 {
+  @include fill-container;
+}
+
+/*
+.shiny-html-output.shiny-bound-output {
+  width: 100% !important;
+  height: 100% !important;
+}
+*/
+
+/* Add shadows to plotly plots 
+.plot-container.plotly {
+    @include shadow;
+}
+*/
+
+/*  Center dropdown text 
+.form-group.shiny-input-container {
+  text-align: center;
+}
+*/

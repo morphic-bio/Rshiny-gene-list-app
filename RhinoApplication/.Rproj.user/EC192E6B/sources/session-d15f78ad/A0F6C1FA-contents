@@ -1,0 +1,9 @@
+march_2024_MSK_gene_list <- read.csv("/Users/gabrielm/Downloads/MSK MorPhiC gene list 2024-01 list for DRACC.xlsx - Sheet1.csv", header = TRUE, skip = 1)
+new_list <- march_2024_MSK_gene_list$Gene
+current_list <- morphic_gene_list_data[[3]][[1]]
+current_list <- current_list[1:211]
+current_list
+in_new_not_old <- setdiff(new_list, current_list)
+in_old_not_new <- setdiff(current_list, new_list)
+in_new_not_old
+in_old_not_new

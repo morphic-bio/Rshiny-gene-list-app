@@ -1,0 +1,11 @@
+# Gene x programme matrices for linear SVI on Hangfu dataset
+# -Values correspond to genes implication to a programme with bi/tridirectionality in score interpretation 
+#   i.e. higher negative or higher positive scores = down/up regulation respectivley
+linear_SCVI_none_celltype <- read.delim("../../../../Downloads/huangfu_all_linear_SCVI_None_celltype_loadings.txt")
+linear_SCVI_none_genotype <- read.delim("../../../../Downloads/huangfu_all_linear_SCVI_None_genotype_loadings.txt")
+
+# Based on the threholds we can take genes most implicated in the programme and compute semantic similary analysis from associated gene ontology terms (for each ontology)
+# 
+
+# If we take genes with highest scores we loose information (on up/down regulation) 
+# but we can look at their enriched GO terms -> does this correlate with the predicted pathway/programme/cell-type cluster?
