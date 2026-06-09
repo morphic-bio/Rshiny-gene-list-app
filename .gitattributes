@@ -1,0 +1,2 @@
+# The DuckDB database is large (~164 MB) and stored via Git LFS.
+*.duckdb filter=lfs diff=lfs merge=lfs -text

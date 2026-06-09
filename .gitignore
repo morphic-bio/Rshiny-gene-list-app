@@ -1,0 +1,18 @@
+# RStudio / R session cruft
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj
+
+# DuckDB working files
+*.duckdb.wal
+*.duckdb.tmp/
+*.duckdb.bak-*
+
+# Deployment metadata
+rsconnect/
+.secrets/
+
+# macOS
+.DS_Store
