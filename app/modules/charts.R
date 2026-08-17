@@ -433,7 +433,9 @@ chartsModuleServer <- function(id, con) {
         
         col_is_num  <- is.numeric(df[[col]])
         eff_show_na <- show_na
-        y_label     <- if (isTRUE(as_percent)) "Proportion of Genes" else "Counts of Genes"
+        y_label     <- if (col_is_num) nice_name(col)
+                       else if (isTRUE(as_percent)) "Proportion of Genes"
+                       else "Counts of Genes"
         
         p <- auto_plot_one_var(
           con           = con,
