@@ -1,6 +1,6 @@
 # MorPhiC Gene List App
 
-A [Shiny](https://shiny.posit.co/) app for browsing MorPhiC gene lists, viewing
+A Shiny app for browsing MorPhiC gene lists, viewing
 summary charts, and exploring GO / Reactome / odds-ratio enrichment results.
 
 **Live app:** https://whri-phenogenomics.shinyapps.io/morphic_gene_list/
