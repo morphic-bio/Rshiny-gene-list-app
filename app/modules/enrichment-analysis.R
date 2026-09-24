@@ -22,9 +22,9 @@ enrichmentModuleServer <- function(id, con, load_trigger = reactive(TRUE)) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
-    go_path       <- "./enirchment-plots-tables/go_results_v3.rds"
-    reactome_path <- "./enirchment-plots-tables/reactome_results_v3.rds"
-    odds_path     <- "./enirchment-plots-tables/oddsratio_results_v3.rds"
+    go_path       <- "./enirchment-plots-tables/go_results_v4.rds"
+    reactome_path <- "./enirchment-plots-tables/reactome_results_v4.rds"
+    odds_path     <- "./enirchment-plots-tables/oddsratio_results_v4.rds"
     
     sanitize_id <- function(x) gsub("[^a-zA-Z0-9]+", "_", x)
     
@@ -315,84 +315,77 @@ enrichmentModuleServer <- function(id, con, load_trigger = reactive(TRUE)) {
       if (is.null(odds_results)) {
         return(div("Loading odds ratio results…"))
       }
-      
+
+      # The disease sources share one card and are tabbed by source; every other
+      # target keeps a card of its own.
+      disease_targets <- c(OMIM_disease       = "OMIM",
+                           PanelApp_green     = "PanelApp (green)",
+                           ClinGen_definitive = "ClinGen (definitive)")
+      other_labels <- c(
+        IMPC_lethal      = "IMPC Lethal Genes",
+        DepMap_essential = "DepMap Essential Genes",
+        LOEUF_0_6        = "gnomAD constrained genes"
+      )
       pretty_label <- function(name) {
-        label_map <- c(
-          OMIM_all_disease = "OMIM All Disease Genes",
-          IMPC_lethal      = "IMPC Lethal Genes",
-          DepMap_essential = "DepMap Essential Genes",
-          LOEUF_0_6        = "gnomAD constrained genes"
-        )
-        if (!is.null(label_map[[name]])) label_map[[name]] else gsub("_", " ", name)
+        if (name %in% names(other_labels)) other_labels[[name]] else gsub("_", " ", name)
       }
-      
-      cards <- list()
-      
-      # Each odds_results[[target_name]] is list(plot = ggplot, table = df)
-      for (target_name in names(odds_results)) {
-        res <- odds_results[[target_name]]
-        
-        base_id    <- paste0("odds_", sanitize_id(target_name))
-        plot_id    <- paste0(base_id, "_plot")
-        table_id   <- paste0(base_id, "_table")
-        
-        # Title shown on the CARD (header), not inside the plot
-        card_title <- pretty_label(target_name)
-        
-        has_plot <- !is.null(res$plot)
-        has_tbl  <- !is.null(res$table)
-        
+
+      # Plot and Table panels for one target, registering its outputs
+      target_panels <- function(target_name) {
+        res      <- odds_results[[target_name]]
+        base_id  <- paste0("odds_", sanitize_id(target_name))
+        plot_id  <- paste0(base_id, "_plot")
+        table_id <- paste0(base_id, "_table")
+
         local({
-          res_local    <- res
-          plot_id_loc  <- plot_id
-          table_id_loc <- table_id
-          
+          res_local <- res
           if (!is.null(res_local$plot)) {
-            output[[plot_id_loc]] <- renderPlot({
-              # ensure plot itself has no title; card header carries it
+            # plot carries no title of its own; the card header does
+            output[[plot_id]] <- renderPlot({
               res_local$plot + ggplot2::labs(title = NULL)
             })
           }
-          
           if (!is.null(res_local$table)) {
-            output[[table_id_loc]] <- renderDT({
-              datatable(
-                res_local$table,
-                options = list(
-                  pageLength   = 10,
-                  lengthChange = FALSE
-                )
-              )
+            output[[table_id]] <- renderDT({
+              datatable(res_local$table,
+                        options = list(pageLength = 10, lengthChange = FALSE))
             })
           }
         })
-        
-        cards[[length(cards) + 1L]] <-
-          navset_card_tab(
-            title       = card_title,   # <- title in the card header
-            full_screen = TRUE,
-            nav_panel(
-              "Plot",
-              if (has_plot) {
-                plotOutput(ns(plot_id), height = "350px")
-              } else {
-                div("no plot available for this target")
-              }
-            ),
-            nav_panel(
-              "Table",
-              if (has_tbl) {
-                div(
-                  style = "max-height:400px; overflow-y:auto;",
-                  DTOutput(ns(table_id))
-                )
-              } else {
-                div("no table available for this target")
-              }
-            )
+
+        list(
+          nav_panel(
+            "Plot",
+            if (!is.null(res$plot)) plotOutput(ns(plot_id), height = "350px")
+            else div("no plot available for this target")
+          ),
+          nav_panel(
+            "Table",
+            if (!is.null(res$table)) div(style = "max-height:400px; overflow-y:auto;",
+                                         DTOutput(ns(table_id)))
+            else div("no table available for this target")
           )
+        )
       }
-      
+
+      cards   <- list()
+      disease <- intersect(names(disease_targets), names(odds_results))
+
+      if (length(disease)) {
+        cards[[length(cards) + 1L]] <- do.call(navset_card_tab, c(
+          list(title = "Disease Genes", full_screen = TRUE),
+          lapply(disease, function(tn)
+            nav_panel(disease_targets[[tn]], do.call(navset_tab, target_panels(tn))))
+        ))
+      }
+
+      for (target_name in setdiff(names(odds_results), disease)) {
+        cards[[length(cards) + 1L]] <- do.call(navset_card_tab, c(
+          list(title = pretty_label(target_name), full_screen = TRUE),
+          target_panels(target_name)
+        ))
+      }
+
       layout_column_wrap(width = 1/2, !!!cards)
     })
   })

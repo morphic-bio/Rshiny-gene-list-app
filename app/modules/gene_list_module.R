@@ -106,7 +106,13 @@ geneListModuleServer <- function(id, con, gene_annotations) {
       if (!length(sets)) return(gene_annotations)
       genes <- if (identical(mode, "intersect")) Reduce(intersect, sets) else Reduce(union, sets)
       if (!length(genes)) return(gene_annotations[0, , drop = FALSE])
-      gene_annotations[gene_annotations[[symbol_col]] %in% genes, , drop = FALSE]
+      # Match on HGNC symbol, falling back to Ensembl ID for list entries that
+      # have no approved HGNC symbol (e.g. the HERV ENSG00000293569).
+      hit <- gene_annotations[[symbol_col]] %in% genes
+      if ("Ensembl Gene ID" %in% colnames(gene_annotations)) {
+        hit <- hit | gene_annotations[["Ensembl Gene ID"]] %in% genes
+      }
+      gene_annotations[hit, , drop = FALSE]
     })
     
     output$gene_list_table <- renderDT({

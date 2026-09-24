@@ -117,6 +117,31 @@ chartsModuleUI <- function(id) {
   )
 }
 
+# Grouped bar chart with one trace per gene list.
+#
+# Traces are built explicitly rather than via plot_ly(color = ~List): with a
+# categorical x, that mapping hands each trace the first n rows of the frame
+# instead of that list's own rows, so every list is drawn with another list's
+# values.
+grouped_bar <- function(counts, as_percent) {
+  lev <- if (is.factor(counts$Value)) levels(counts$Value) else sort(unique(counts$Value))
+  p <- plotly::plot_ly()
+  for (lst in unique(counts$List)) {
+    d <- counts[counts$List == lst, , drop = FALSE]
+    d <- d[match(lev, as.character(d$Value)), , drop = FALSE]
+    p <- plotly::add_trace(
+      p, type = "bar", name = lst,
+      x = lev, y = d$Y, customdata = d$N,
+      hovertemplate = if (as_percent)
+        "%{y:.1%}<br>n=%{customdata}<extra>%{fullData.name}</extra>"
+      else
+        "%{y}<extra>%{fullData.name}</extra>"
+    )
+  }
+  plotly::layout(p, barmode = "group",
+                 yaxis = list(tickformat = if (as_percent) ".0%" else NULL))
+}
+
 # ========================= Plotting helper ========================= #
 auto_plot_one_var <- function(con, df, gene_lists, as_percent = TRUE,
                               show_na = FALSE, col_nice_name = NULL) {
@@ -126,12 +151,15 @@ auto_plot_one_var <- function(con, df, gene_lists, as_percent = TRUE,
 
   col_is_num <- is.numeric(df[[col]])
 
-  # Build long data: one row per gene per list
+  # Annotation tables hold several rows per gene (one per phenotype, panel,
+  # assertion...), so GeneID is carried through and categorical counts are taken
+  # over distinct genes rather than annotation rows.
   long <- do.call(rbind, lapply(names(gene_lists), function(lst) {
     ids <- gene_lists[[lst]]
     sub <- df[df$GeneID %in% ids, , drop = FALSE]
     if (!nrow(sub)) return(NULL)
-    data.frame(List = lst, Value = sub[[col]], stringsAsFactors = FALSE)
+    data.frame(List = lst, GeneID = sub$GeneID, Value = sub[[col]],
+               stringsAsFactors = FALSE)
   }))
 
   if (is.null(long) || !nrow(long)) {
@@ -150,7 +178,12 @@ auto_plot_one_var <- function(con, df, gene_lists, as_percent = TRUE,
                          color = ~List) %>%
       plotly::layout(showlegend = FALSE)
   } else {
-    # --- Categorical ---
+    # --- Categorical: counts are over distinct genes ---
+    long <- unique(long)
+    # a gene that carries real annotations keeps only its annotated rows
+    annotated <- unique(long$GeneID[!is.na(long$Value)])
+    long <- long[!(is.na(long$Value) & long$GeneID %in% annotated), , drop = FALSE]
+
     n_unique <- length(unique(stats::na.omit(long$Value)))
 
     if (n_unique >= 10) {
@@ -158,63 +191,36 @@ auto_plot_one_var <- function(con, df, gene_lists, as_percent = TRUE,
       has_label     <- paste0("Has ", col_nice_name, " annotations")
       has_not_label <- paste0("Does not have ", col_nice_name, " annotations")
       long$Value <- ifelse(is.na(long$Value), has_not_label, has_label)
-
-      counts <- as.data.frame(table(List = long$List, Value = long$Value),
-                              stringsAsFactors = FALSE)
-      names(counts)[3] <- "N"
-
-      totals <- tapply(counts$N, counts$List, sum)
-      if (as_percent) {
-        counts$Y <- counts$N / totals[counts$List]
-      } else {
-        counts$Y <- counts$N
-      }
-
-      # Order so "Has" comes first
-      counts$Value <- factor(counts$Value, levels = c(has_label, has_not_label))
-
-      p <- plotly::plot_ly(counts, x = ~Value, y = ~Y, color = ~List,
-                           type = "bar",
-                           hovertemplate = if (as_percent)
-                             paste0("%{y:.1%}<br>n=%{customdata}<extra>%{fullData.name}</extra>")
-                           else
-                             paste0("%{y}<extra>%{fullData.name}</extra>"),
-                           customdata = ~N) %>%
-        plotly::layout(barmode = "group",
-                       yaxis = list(tickformat = if (as_percent) ".0%" else NULL))
+      long <- unique(long)
+      lev  <- c(has_label, has_not_label)
     } else {
-      # Low-cardinality: standard grouped bar chart
       if (!show_na) {
-        long <- long[!is.na(long$Value), ]
+        long <- long[!is.na(long$Value), , drop = FALSE]
       } else {
         long$Value[is.na(long$Value)] <- "(NA)"
       }
-      if (!nrow(long)) {
-        return(plotly::plot_ly() %>%
-                 plotly::layout(title = "No data available"))
-      }
-
-      counts <- as.data.frame(table(List = long$List, Value = long$Value),
-                              stringsAsFactors = FALSE)
-      names(counts)[3] <- "N"
-
-      if (as_percent) {
-        totals <- tapply(counts$N, counts$List, sum)
-        counts$Y <- counts$N / totals[counts$List]
-      } else {
-        counts$Y <- counts$N
-      }
-
-      p <- plotly::plot_ly(counts, x = ~Value, y = ~Y, color = ~List,
-                           type = "bar",
-                           hovertemplate = if (as_percent)
-                             paste0("%{y:.1%}<br>n=%{customdata}<extra>%{fullData.name}</extra>")
-                           else
-                             paste0("%{y}<extra>%{fullData.name}</extra>"),
-                           customdata = ~N) %>%
-        plotly::layout(barmode = "group",
-                       yaxis = list(tickformat = if (as_percent) ".0%" else NULL))
+      lev <- sort(unique(long$Value))
     }
+
+    if (!nrow(long)) {
+      return(plotly::plot_ly() %>%
+               plotly::layout(title = "No data available"))
+    }
+
+    counts <- as.data.frame(table(List = long$List, Value = long$Value),
+                            stringsAsFactors = FALSE)
+    names(counts)[3] <- "N"
+    counts$Value <- factor(counts$Value, levels = lev)
+
+    if (as_percent) {
+      # denominator = genes in the list contributing to this chart
+      totals    <- tapply(long$GeneID, long$List, function(g) length(unique(g)))
+      counts$Y  <- counts$N / totals[counts$List]
+    } else {
+      counts$Y <- counts$N
+    }
+
+    p <- grouped_bar(counts, as_percent)
   }
 
   p
@@ -226,7 +232,7 @@ chartsModuleServer <- function(id, con) {
     ns <- session$ns
     
     # ---- Column groups ----
-    cols_disease    <- c("phenotypes", "panel_disease_group", "earliest_lethality_category")
+    cols_disease    <- c("phenotypes", "panel_disease_group", "classification", "earliest_lethality_category")
     cols_mouse      <- c("wol", "impc_phenotypes", "impc_viability", "viability_mgi")
     cols_cell       <- c("mean_score_all", "bf_mef", "bf_lam", "NE_pluripotency_score",
                          "DE_pluripotency_score", "E8_self_renewal_score", "E6_self_renewal_score")
